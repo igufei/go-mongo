@@ -1,6 +1,6 @@
 # Proxy Middleware for Gin Framework
 
-This is a middleware for [Gin](https://github.com/gin-gonic/gin) framework.
+实现对官方 [mongodb](https://github.com/mongodb/mongo-go-driver) 的golang驱动的单例封装
 
 ## Usage
 
