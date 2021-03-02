@@ -34,9 +34,9 @@ func MustConnect(dbHOST string, dbName string) {
 
 // 链接数据库
 func (db *mongodb) _connect(dbHOST string, dbName string) error {
-	// opts := &options.ClientOptions{}
-	// opts.SetMaxPoolSize(5) //设置连接池大小
-	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(dbHOST))
 	if err != nil {
 		return err
@@ -56,7 +56,8 @@ func (db *mongodb) InsertOne(collectionName string, doc interface{}) bool {
 		return false
 	}
 	table := db.database.Collection(collectionName)
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 	result, err := table.InsertOne(ctx, doc)
 	if result == nil || err != nil {
 		return false
@@ -71,7 +72,8 @@ func (db *mongodb) InsertMany(collectionName string, doc []interface{}) int64 {
 		return 0
 	}
 	table := db.database.Collection(collectionName)
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 	result, err := table.InsertMany(ctx, doc)
 	if result == nil || err != nil {
 		return 0
@@ -86,7 +88,8 @@ func (db *mongodb) FindOne(collectionName string, filter interface{}) bson.M {
 		return bson.M(nil)
 	}
 	table := db.database.Collection(collectionName)
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 	var result bson.M
 	err := table.FindOne(ctx, filter).Decode(&result)
 	if err != nil {
@@ -103,7 +106,8 @@ func (db *mongodb) FindMany(collectionName string, filter interface{}, opts ...*
 		return resultArr
 	}
 	table := db.database.Collection(collectionName)
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 	cur, err := table.Find(ctx, filter, opts...)
 	if err != nil {
 		Error.Printf("mongo:%v\n", err)
@@ -129,7 +133,8 @@ func (db *mongodb) UpdateOne(collectionName string, filter interface{}, update i
 		return false
 	}
 	table := db.database.Collection(collectionName)
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 	result, err := table.UpdateOne(ctx, filter, update)
 	if err != nil {
 		return false
@@ -144,7 +149,8 @@ func (db *mongodb) UpdateMany(collectionName string, filter interface{}, update 
 		return 0
 	}
 	table := db.database.Collection(collectionName)
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 	result, err := table.UpdateMany(ctx, filter, update)
 	if err != nil {
 		return 0
@@ -159,7 +165,8 @@ func (db *mongodb) DeleteOne(collectionName string, filter interface{}) bool {
 		return false
 	}
 	table := db.database.Collection(collectionName)
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 	result, err := table.DeleteOne(ctx, filter)
 	if err != nil {
 		return false
@@ -174,7 +181,8 @@ func (db *mongodb) DeleteMany(collectionName string, filter interface{}) int64 {
 		return 0
 	}
 	table := db.database.Collection(collectionName)
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 	result, err := table.DeleteMany(ctx, filter)
 	if err != nil {
 		return 0
@@ -189,7 +197,8 @@ func (db *mongodb) Count(collectionName string, filter interface{}) int64 {
 		return 0
 	}
 	table := db.database.Collection(collectionName)
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 	result, err := table.CountDocuments(ctx, filter)
 	if err != nil {
 		return 0
@@ -205,7 +214,8 @@ func (db *mongodb) Aggregate(collectionName string, filter interface{}, opts ...
 		return resultArr
 	}
 	table := db.database.Collection(collectionName)
-	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 	cur, err := table.Aggregate(ctx, filter, opts...)
 	if err != nil {
 		Error.Printf("mongo:%v\n", err)
@@ -235,8 +245,8 @@ func (db *mongodb) ToStruct(bsonValue interface{}, objectValue interface{}) erro
 	}
 	return nil
 }
-
 func (db *mongodb) ToObjectID(id string) primitive.ObjectID {
 	oID, _ := primitive.ObjectIDFromHex(id)
+
 	return oID
 }
